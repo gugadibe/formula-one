@@ -1,9 +1,10 @@
 import fastify from 'fastify';
-import { ServerResponse } from 'http';
+import cors from '@fastify/cors';
 
 const server = fastify({
     logger: true,
 });
+server.register(cors,{origin: '*'});
 
 const teams = [
     { id: 1, name: 'Ferrari', base: 'Maranello, Itália' },
@@ -63,9 +64,9 @@ server.get('/teams', async (request, response) => {
     return { teams };
 });
 
-server.get<{ Params: TeamRequest }>('/team/:id', async (request, response) => {
-    const teamId: string = request.params.id;
-    const team = teams.find((t) => t.id === parseInt(teamId));
+server.get<{ Params: TeamRequest }>('/teams/:id', async (request, response) => {
+    const teamId = parseInt(request.params.id);
+    const team = teams.find((t) => t.id === teamId);
     if (!team) {
         response.type('application/json').code(404);
         return { error: 'Team not found' };
@@ -83,9 +84,9 @@ interface DriverRequest {
     id: string;
 }
 
-server.get<{ Params: DriverRequest }>('/driver/:id', async(request, response) => {
-    const driverId: string = request.params.id;
-    const driver = drivers.find((d) => d.id === parseInt(driverId));
+server.get<{ Params: DriverRequest }>('/drivers/:id', async(request, response) => {
+    const driverId = parseInt(request.params.id);
+    const driver = drivers.find((d) => d.id === driverId);
     if (!driver) {
         response.type('application/json').code(404);
         return { error: 'Driver not found' };
@@ -94,6 +95,6 @@ server.get<{ Params: DriverRequest }>('/driver/:id', async(request, response) =>
     return { driver };
 });
 
-server.listen({port: 3333}, () => {
-    console.log('Server is running on http://localhost:3333');
+server.listen({port: Number(process.env.PORT)}, () => {
+    console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
